@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>漢字検定2級クイズ【2の弐】</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15110d;
+    --ink2:#211a12;
+    --ink3:#2c2418;
+    --gold:#d4af37;
+    --gold-soft:#e6c875;
+    --crimson:#b5292f;
+    --crimson-bright:#e0474d;
+    --paper:#f3ead6;
+    --paper-dim:#cdbf9e;
+    --green:#3f9d6b;
+    --shadow:rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Shippori Mincho','Noto Sans JP',serif;
+    background:var(--ink);
+    color:var(--paper);
+    min-height:100dvh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:.5;pointer-events:none;}
+  .wrap{
+    position:relative;z-index:1;
+    max-width:680px;margin:0 auto;
+    padding:clamp(12px,3.5vw,28px) clamp(12px,4vw,24px) 48px;
+    min-height:100dvh;
+  }
+  .screen{display:none;animation:fade .35s ease;}
+  .screen.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ===== Header / Title ===== */
+  .crest{
+    text-align:center;margin-bottom:clamp(14px,3vw,22px);
+  }
+  .crest .seal{
+    display:inline-block;font-size:clamp(13px,3vw,15px);letter-spacing:.3em;
+    color:var(--gold);border:1px solid var(--gold);border-radius:4px;
+    padding:4px 14px;margin-bottom:14px;background:rgba(212,175,55,.06);
+  }
+  h1{
+    font-size:clamp(30px,8.5vw,52px);font-weight:800;margin:0;line-height:1.15;
+    color:var(--paper);text-shadow:0 2px 18px rgba(212,175,55,.25);
+  }
+  h1 .kyu{color:var(--gold);}
+  h1 .ichi{color:var(--crimson-bright);}
+  .subtitle{margin-top:10px;color:var(--paper-dim);font-size:clamp(13px,3.4vw,16px);letter-spacing:.05em;}
+
+  .howto{
+    background:linear-gradient(160deg,var(--ink2),var(--ink3));
+    border:1px solid rgba(212,175,55,.25);border-radius:14px;
+    padding:clamp(14px,3.5vw,20px);margin:clamp(16px,4vw,26px) 0;
+    box-shadow:0 6px 20px var(--shadow);
+  }
+  .howto h3{margin:0 0 10px;color:var(--gold);font-size:clamp(15px,3.8vw,17px);}
+  .howto ul{margin:0;padding-left:1.2em;line-height:1.85;font-size:clamp(13px,3.4vw,15px);font-family:'Noto Sans JP',sans-serif;color:#e7ddc6;}
+  .howto .tap-hint{
+    margin-top:12px;text-align:center;font-weight:700;color:var(--crimson-bright);
+    font-size:clamp(14px,3.8vw,17px);letter-spacing:.04em;
+    font-family:'Noto Sans JP',sans-serif;
+  }
+  .howto .tap-hint span{display:inline-block;animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:.9;}50%{transform:scale(1.06);opacity:1;}}
+
+  .section-label{
+    text-align:center;color:var(--gold);font-size:clamp(13px,3.4vw,15px);
+    letter-spacing:.25em;margin:6px 0 14px;
+  }
+  .section-label::before,.section-label::after{content:"—　";color:rgba(212,175,55,.5);}
+  .section-label::after{content:"　—";}
+
+  /* ===== Genre cards ===== */
+  .genres{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2.6vw,14px);}
+  .gcard{
+    background:linear-gradient(155deg,#241c13,#1a140d);
+    border:1px solid rgba(212,175,55,.28);border-radius:14px;
+    padding:clamp(14px,3.8vw,20px) clamp(10px,3vw,16px);
+    cursor:pointer;text-align:center;position:relative;overflow:hidden;
+    transition:transform .15s ease,border-color .2s ease,box-shadow .2s ease;
+  }
+  .gcard:active{transform:scale(.97);}
+  .gcard:hover{border-color:var(--gold);box-shadow:0 8px 22px var(--shadow),0 0 0 1px rgba(212,175,55,.2) inset;}
+  .gcard .ji{font-size:clamp(30px,9vw,42px);line-height:1;color:var(--gold-soft);text-shadow:0 2px 10px rgba(212,175,55,.3);}
+  .gcard .nm{margin-top:8px;font-weight:700;font-size:clamp(14px,3.8vw,17px);}
+  .gcard .ct{margin-top:4px;font-size:11px;color:var(--paper-dim);font-family:'Noto Sans JP',sans-serif;}
+  .gcard::after{content:"クリックで挑戦";position:absolute;left:0;right:0;bottom:6px;font-size:10px;color:var(--crimson-bright);font-family:'Noto Sans JP',sans-serif;opacity:.85;}
+
+  .footer-row{display:flex;justify-content:center;margin-top:26px;}
+  .btn{
+    font-family:'Noto Sans JP',sans-serif;font-weight:700;cursor:pointer;border:none;
+    border-radius:10px;padding:13px 22px;font-size:15px;transition:transform .12s ease,filter .2s ease;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-ghost{background:transparent;border:1px solid var(--paper-dim);color:var(--paper-dim);}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-gold{background:linear-gradient(135deg,var(--gold),#b8932a);color:#231a07;box-shadow:0 5px 16px rgba(212,175,55,.3);}
+  .btn-crimson{background:linear-gradient(135deg,var(--crimson),#8e1e23);color:#fff;box-shadow:0 5px 16px rgba(181,41,47,.35);}
+  .btn-block{width:100%;}
+
+  /* ===== Modal ===== */
+  .modal-bg{
+    position:fixed;inset:0;z-index:50;background:rgba(8,6,4,.78);
+    display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);
+  }
+  .modal-bg.show{display:flex;animation:fade .25s ease;}
+  .modal{
+    background:linear-gradient(160deg,var(--ink2),var(--ink3));
+    border:1px solid var(--gold);border-radius:18px;max-width:380px;width:100%;
+    padding:26px 22px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.6);
+  }
+  .modal .ji{font-size:54px;color:var(--gold-soft);line-height:1;}
+  .modal h2{margin:10px 0 4px;font-size:22px;}
+  .modal p{margin:6px 0 0;color:var(--paper-dim);font-size:14px;font-family:'Noto Sans JP',sans-serif;line-height:1.7;}
+  .modal .rules{margin:16px 0 20px;font-size:13px;color:#e7ddc6;font-family:'Noto Sans JP',sans-serif;line-height:1.8;}
+  .modal-btns{display:flex;gap:10px;}
+  .modal-btns .btn{flex:1;}
+
+  /* ===== Quiz ===== */
+  .hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;}
+  .hud .pill{
+    background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.3);border-radius:30px;
+    padding:8px 16px;font-family:'Noto Sans JP',sans-serif;font-weight:700;font-size:clamp(13px,3.6vw,15px);
+  }
+  .hud .pill .lab{color:var(--paper-dim);font-size:11px;margin-right:6px;font-weight:500;}
+  .hud .score-pill{color:var(--gold);}
+  .hud .time-pill{color:var(--paper);}
+  .hud .time-pill.warn{color:var(--crimson-bright);animation:blink .8s steps(2,end) infinite;}
+  @keyframes blink{50%{opacity:.4;}}
+  .timebar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:6px;}
+  .timebar .fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--crimson));width:100%;transition:width 1s linear;}
+  .progress{text-align:center;font-size:12px;color:var(--paper-dim);font-family:'Noto Sans JP',sans-serif;margin-bottom:14px;letter-spacing:.1em;}
+
+  .qcard{
+    background:linear-gradient(160deg,var(--ink2),var(--ink3));
+    border:1px solid rgba(212,175,55,.25);border-radius:16px;
+    padding:clamp(18px,5vw,30px) clamp(16px,4.5vw,26px);box-shadow:0 8px 26px var(--shadow);
+  }
+  .qtag{
+    display:inline-block;font-size:11px;letter-spacing:.18em;color:var(--gold);
+    border:1px solid rgba(212,175,55,.4);border-radius:4px;padding:3px 10px;margin-bottom:14px;
+    font-family:'Noto Sans JP',sans-serif;
+  }
+  .qtype{float:right;font-size:11px;color:var(--paper-dim);font-family:'Noto Sans JP',sans-serif;margin-top:4px;}
+  .qtext{font-size:clamp(17px,4.8vw,23px);font-weight:700;line-height:1.6;margin-bottom:4px;}
+  .qtext .target{color:var(--gold-soft);font-size:1.25em;letter-spacing:.04em;}
+  .qsub{font-size:13px;color:var(--paper-dim);font-family:'Noto Sans JP',sans-serif;margin-top:8px;}
+
+  .choices{display:grid;gap:10px;margin-top:20px;}
+  .choices.ox{grid-template-columns:1fr 1fr;}
+  .choice{
+    font-family:'Noto Sans JP',sans-serif;font-size:clamp(15px,4.2vw,18px);font-weight:600;
+    background:#1c1610;border:1.5px solid rgba(212,175,55,.28);color:var(--paper);
+    border-radius:12px;padding:15px 16px;cursor:pointer;text-align:center;
+    transition:transform .12s ease,background .2s ease,border-color .2s ease;min-height:54px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .choice:active{transform:scale(.97);}
+  .choice:hover{border-color:var(--gold);background:#26201600;}
+  .choice.ox-mark{font-size:clamp(26px,8vw,34px);font-weight:800;}
+  .choice.correct{background:linear-gradient(135deg,#2f7a52,#256142);border-color:var(--green);color:#fff;}
+  .choice.wrong{background:linear-gradient(135deg,#8e2126,#6b181c);border-color:var(--crimson);color:#fff;}
+  .choice.dim{opacity:.4;}
+  .choice[disabled]{cursor:default;}
+
+  /* feedback toast */
+  .toast{
+    position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);
+    z-index:60;background:rgba(20,15,10,.96);border:1px solid var(--gold);
+    border-radius:12px;padding:14px 22px;max-width:90%;text-align:center;
+    font-family:'Noto Sans JP',sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast .big{font-size:18px;font-weight:800;}
+  .toast.ok .big{color:var(--green);}
+  .toast.ng .big{color:var(--crimson-bright);}
+  .toast .small{font-size:13px;color:#e7ddc6;margin-top:4px;line-height:1.5;}
+
+  /* ===== Result ===== */
+  .result-card{
+    background:linear-gradient(160deg,var(--ink2),var(--ink3));
+    border:1px solid var(--gold);border-radius:18px;padding:28px 22px;text-align:center;
+    box-shadow:0 10px 30px var(--shadow);
+  }
+  .result-card .trophy{font-size:46px;}
+  .result-card h2{margin:8px 0 2px;font-size:24px;}
+  .result-card .genre-name{color:var(--gold);font-size:15px;font-family:'Noto Sans JP',sans-serif;}
+  .score-break{margin:20px 0;display:grid;gap:8px;font-family:'Noto Sans JP',sans-serif;font-size:14px;}
+  .score-break .row{display:flex;justify-content:space-between;padding:8px 14px;background:rgba(0,0,0,.25);border-radius:8px;}
+  .score-break .row .v{font-weight:700;color:var(--gold);}
+  .total-score{font-size:44px;font-weight:800;color:var(--gold);margin:6px 0;font-family:'Noto Sans JP',sans-serif;}
+  .total-score small{font-size:18px;color:var(--paper-dim);}
+  .rank-badge{display:inline-block;padding:6px 18px;border-radius:30px;font-weight:700;font-family:'Noto Sans JP',sans-serif;margin-top:6px;font-size:15px;}
+
+  .name-entry{margin:18px 0;}
+  .name-entry input{
+    font-family:'Noto Sans JP',sans-serif;font-size:16px;padding:11px 14px;border-radius:10px;
+    border:1.5px solid rgba(212,175,55,.4);background:#1c1610;color:var(--paper);width:100%;text-align:center;
+  }
+  .name-entry input:focus{outline:none;border-color:var(--gold);}
+  .result-actions{display:grid;gap:10px;margin-top:18px;}
+
+  /* ===== Review ===== */
+  .review-card{
+    background:linear-gradient(160deg,var(--ink2),var(--ink3));
+    border:1px solid rgba(181,41,47,.4);border-radius:16px;padding:22px 20px;box-shadow:0 8px 26px var(--shadow);
+  }
+  .review-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .review-head .ttl{color:var(--crimson-bright);font-weight:700;font-size:16px;font-family:'Noto Sans JP',sans-serif;}
+  .review-head .count{font-size:13px;color:var(--paper-dim);font-family:'Noto Sans JP',sans-serif;}
+  .review-q{font-size:clamp(16px,4.4vw,20px);font-weight:700;line-height:1.6;margin-bottom:14px;}
+  .review-q .target{color:var(--gold-soft);font-size:1.2em;}
+  .ans-block{font-family:'Noto Sans JP',sans-serif;}
+  .ans-line{padding:11px 14px;border-radius:10px;margin-bottom:8px;font-size:14px;line-height:1.6;}
+  .ans-line.yours{background:rgba(181,41,47,.15);border:1px solid rgba(181,41,47,.4);}
+  .ans-line.right{background:rgba(63,157,107,.13);border:1px solid rgba(63,157,107,.45);}
+  .ans-line .lab{font-size:11px;color:var(--paper-dim);display:block;margin-bottom:2px;}
+  .ans-line.yours .val{color:var(--crimson-bright);font-weight:700;}
+  .ans-line.right .val{color:#7fd6a3;font-weight:700;}
+  .explain{margin-top:12px;padding:13px 15px;background:rgba(212,175,55,.08);border-left:3px solid var(--gold);border-radius:8px;font-family:'Noto Sans JP',sans-serif;font-size:13px;line-height:1.75;color:#ece2cb;}
+  .review-nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px;}
+  .review-nav .btn{flex:1;}
+  .perfect-msg{text-align:center;padding:30px 10px;font-family:'Noto Sans JP',sans-serif;color:var(--gold);font-size:18px;line-height:1.7;}
+
+  /* ===== Ranking ===== */
+  .rank-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .rank-tabs .tab{
+    flex:1;min-width:80px;font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:600;
+    padding:8px 6px;border-radius:8px;border:1px solid rgba(212,175,55,.3);background:#1c1610;
+    color:var(--paper-dim);cursor:pointer;text-align:center;transition:all .2s ease;
+  }
+  .rank-tabs .tab.active{background:linear-gradient(135deg,var(--gold),#b8932a);color:#231a07;border-color:var(--gold);}
+  .rank-list{list-style:none;margin:0;padding:0;font-family:'Noto Sans JP',sans-serif;}
+  .rank-list li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:rgba(0,0,0,.22);margin-bottom:7px;}
+  .rank-list li .pos{font-weight:800;width:28px;text-align:center;color:var(--paper-dim);font-size:15px;}
+  .rank-list li.top1 .pos{color:#ffd24a;}.rank-list li.top2 .pos{color:#d8d8d8;}.rank-list li.top3 .pos{color:#cd8b4f;}
+  .rank-list li .nm{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .rank-list li .dt{font-size:11px;color:var(--paper-dim);}
+  .rank-list li .sc{font-weight:800;color:var(--gold);}
+  .rank-empty{text-align:center;color:var(--paper-dim);font-family:'Noto Sans JP',sans-serif;padding:34px 10px;font-size:14px;}
+
+  .back-portal{position:fixed;top:12px;left:12px;z-index:40;}
+  .back-portal a{
+    display:inline-flex;align-items:center;gap:6px;font-family:'Noto Sans JP',sans-serif;
+    font-size:12px;font-weight:600;text-decoration:none;color:var(--paper-dim);
+    background:rgba(20,15,10,.85);border:1px solid rgba(212,175,55,.3);border-radius:30px;padding:7px 14px;
+    transition:all .2s ease;backdrop-filter:blur(4px);
+  }
+  .back-portal a:hover{color:var(--gold);border-color:var(--gold);}
+
+  .top-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
+
+  @media(max-width:360px){
+    .genres{grid-template-columns:1fr 1fr;}
+    .hud .pill{padding:7px 11px;}
+  }
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<div class="back-portal">
+  <a href="https://pecpec37-gift.github.io/portal/">‹ ポータルサイトに戻る</a>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ TITLE ============ -->
+  <section id="screen-title" class="screen active">
+    <div class="crest" style="margin-top:36px;">
+      <div class="seal">日本漢字能力検定　２級</div>
+      <h1><span class="kyu">漢字検定2級</span>クイズ<span class="ichi">【2の弐】</span></h1>
+      <div class="subtitle">2級頻出語を集めた第二弾。読み・書き・四字熟語を総ざらい。</div>
+    </div>
+
+    <div class="howto">
+      <h3>遊び方</h3>
+      <ul>
+        <li>各ジャンルから <b>ランダム10問</b> を出題（4択 ＋ ○× ミックス）</li>
+        <li>制限時間は <b>120秒</b>。残った時間はそのまま <b>ボーナス点</b> に！</li>
+        <li>正解 → <b>+10点 ＆ 時間+5秒</b>（「正解！ +5秒」）</li>
+        <li>不正解 → <b>減点なし・時間−5秒</b>（正解を表示）</li>
+        <li>終了後は <b>間違えた問題を1問ずつ復習</b> できます</li>
+        <li>スコアは端末内ランキングに記録（共有なし・ローカル保存）</li>
+      </ul>
+      <div class="tap-hint"><span>▶ ジャンルカードをクリックで即スタート！</span></div>
+    </div>
+
+    <div class="section-label">ジャンルを選ぶ</div>
+    <div class="genres" id="genreGrid"></div>
+
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="showRanking()">🏆 ランキング</button>
+      <button class="btn btn-ghost" onclick="randomGenre()">🎲 おまかせ出題</button>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="screen-quiz" class="screen">
+    <div class="hud">
+      <div class="pill score-pill"><span class="lab">得点</span><span id="hudScore">0</span></div>
+      <div class="pill time-pill" id="timePill"><span class="lab">残り</span><span id="hudTime">120</span>秒</div>
+    </div>
+    <div class="timebar"><div class="fill" id="timeFill"></div></div>
+    <div class="progress" id="progress">第 1 問 / 10</div>
+
+    <div class="qcard">
+      <span class="qtag" id="qTag">読み</span>
+      <span class="qtype" id="qType">4択</span>
+      <div class="qtext" id="qText"></div>
+      <div class="qsub" id="qSub"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section id="screen-result" class="screen">
+    <div class="result-card">
+      <div class="trophy">🏆</div>
+      <h2>結果発表</h2>
+      <div class="genre-name" id="resGenre">読み</div>
+
+      <div class="total-score"><span id="resTotal">0</span><small> 点</small></div>
+      <div class="rank-badge" id="resBadge">—</div>
+
+      <div class="score-break">
+        <div class="row"><span>正解数</span><span class="v"><span id="resCorrect">0</span> / 10 問</span></div>
+        <div class="row"><span>基礎点（正解×10）</span><span class="v"><span id="resBase">0</span> 点</span></div>
+        <div class="row"><span>残り時間ボーナス</span><span class="v">+ <span id="resBonus">0</span> 点</span></div>
+      </div>
+
+      <div class="name-entry" id="nameEntry">
+        <input type="text" id="playerName" placeholder="ランキング登録名（任意）" maxlength="12">
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-gold btn-block" id="saveBtn" onclick="saveScore()">📥 ランキングに登録</button>
+        <button class="btn btn-crimson btn-block" id="reviewBtn" onclick="showReview()">📖 間違えた問題を復習</button>
+        <button class="btn btn-ghost btn-block" onclick="retrySame()">🔁 同じジャンルに再挑戦</button>
+        <button class="btn btn-ghost btn-block" onclick="goTitle()">🏠 トップへ戻る</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REVIEW ============ -->
+  <section id="screen-review" class="screen">
+    <div class="review-card" id="reviewCard"></div>
+    <div class="footer-row">
+      <button class="btn btn-ghost" onclick="backToResult()">‹ 結果に戻る</button>
+    </div>
+  </section>
+
+  <!-- ============ RANKING ============ -->
+  <section id="screen-ranking" class="screen">
+    <div class="crest" style="margin-top:30px;">
+      <h1 style="font-size:clamp(26px,7vw,40px);">🏆 ランキング</h1>
+      <div class="subtitle">この端末に保存された記録（ジャンル別 / 上位10位）</div>
+    </div>
+    <div class="rank-tabs" id="rankTabs"></div>
+    <ul class="rank-list" id="rankList"></ul>
+    <div class="footer-row" style="gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="goTitle()">🏠 トップへ戻る</button>
+      <button class="btn btn-ghost" onclick="clearRanking()">🗑 この記録を消去</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- confirmation modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="ji" id="modalJi">読</div>
+    <h2 id="modalName">読み</h2>
+    <p id="modalDesc"></p>
+    <div class="rules">
+      ⏱ 120秒　/　全10問　/　正解 +10点・+5秒<br>残り時間はボーナス点に！
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">やめる</button>
+      <button class="btn btn-crimson" onclick="confirmStart()">スタート！</button>
+    </div>
+  </div>
+</div>
+
+<!-- feedback toast -->
+<div class="toast" id="toast"><div class="big" id="toastBig"></div><div class="small" id="toastSmall"></div></div>
+
+<script>
+/* =========================================================
+   漢字検定2級クイズ【2の弐】
+   - 4択 + ○× ミックス / 10問ランダム
+   - 120秒 + 残り時間ボーナス / 正解+10点+5秒 / 不正解-5秒
+   - 表示時に選択肢シャッフル（位置の偏り防止）
+   - ジャンル別ローカルランキング(localStorage)
+   - 間違い復習 / canvas背景の動的リサイズ
+   ========================================================= */
+
+/* ---------- 問題データ ----------
+   4択 : {q, t:'読み'等, a:正解, w:[誤答3つ], e:解説, target:強調表示する語(任意)}
+   ○× : {q, ox:true/false, e:解説}
+*/
+const QUIZ = {
+  yomi:{
+    name:"読み", ji:"読", desc:"常用漢字の音訓・難しい読みを四択で。",
+    pool:[
+      {q:"次の語の読みは？", target:"必至", a:"ひっし", w:["ひつし","ひっち","ひつじ"], e:"必至（ひっし）＝必ずそうなること。「必死」と区別。"},
+      {q:"次の語の読みは？", target:"殺生", a:"せっしょう", w:["さっせい","さっしょう","せつせい"], e:"殺生（せっしょう）＝生き物を殺すこと。むごいこと。"},
+      {q:"次の語の読みは？", target:"反故", a:"ほご", w:["はんこ","ほうこ","はんご"], e:"反故（ほご）＝役に立たないもの。「反故にする」。"},
+      {q:"次の語の読みは？", target:"言上", a:"ごんじょう", w:["げんじょう","げんじょ","ことうえ"], e:"言上（ごんじょう）＝目上の人に申し上げること。"},
+      {q:"次の語の読みは？", target:"脆弱", a:"ぜいじゃく", w:["きじゃく","ぜいよわ","せいじゃく"], e:"脆弱（ぜいじゃく）＝もろくて弱いこと。"},
+      {q:"次の語の読みは？", target:"捏造", a:"ねつぞう", w:["でつぞう","ねつそう","じつぞう"], e:"捏造（ねつぞう）＝事実でないことをこしらえること。"},
+      {q:"次の語の読みは？", target:"遵守", a:"じゅんしゅ", w:["そんしゅ","じゅんす","ちゅんしゅ"], e:"遵守（じゅんしゅ）＝規則などを守り従うこと。"},
+      {q:"次の語の読みは？", target:"収賄", a:"しゅうわい", w:["しゅうゆう","しゅうゆ","しゅわい"], e:"収賄（しゅうわい）＝わいろを受け取ること。"},
+      {q:"次の語の読みは？", target:"逝去", a:"せいきょ", w:["せっきょ","ちょきょ","せいこ"], e:"逝去（せいきょ）＝人の死を敬っていう語。"},
+      {q:"次の語の読みは？", target:"曖昧", a:"あいまい", w:["あいばい","あいみ","あんまい"], e:"曖昧（あいまい）＝はっきりしないさま。"},
+      {q:"次の語の読みは？", target:"語彙", a:"ごい", w:["ごじ","ごき","ごりゅう"], e:"語彙（ごい）＝ある範囲の単語の総体。"},
+      {q:"次の語の読みは？", target:"隠蔽", a:"いんぺい", w:["いんへい","おんぺい","いんべい"], e:"隠蔽（いんぺい）＝おおい隠すこと。"},
+      {q:"次の語の読みは？", target:"賄賂", a:"わいろ", w:["かいろ","わいらく","ゆうろ"], e:"賄賂（わいろ）＝不正な目的で贈る金品。"},
+      {q:"次の語の読みは？", target:"完膚", a:"かんぷ", w:["かんふ","かんはだ","がんぷ"], e:"完膚（かんぷ）＝傷のない皮膚。「完膚なきまで」。"},
+      {q:"次の語の読みは？", target:"拭う", a:"ぬぐう", w:["ふくう","しょくう","のぐう"], e:"拭う（ぬぐう）＝ふきとること。"},
+      {q:"次の語の読みは？", target:"頑な", a:"かたくな", w:["がんな","かたな","がんくな"], e:"頑な（かたくな）＝意地を張って心を閉ざすさま。"},
+      {q:"次の語の読みは？", target:"均す", a:"ならす", w:["きんす","ひとしす","たいらす"], e:"均す（ならす）＝でこぼこを平らにすること。"},
+      {q:"次の語の読みは？", target:"遂げる", a:"とげる", w:["すいげる","つげる","とけげる"], e:"遂げる（とげる）＝なしとげる。"},
+      {q:"次の語の読みは？", target:"凝視", a:"ぎょうし", w:["ぎょうじ","こうし","ぎょし"], e:"凝視（ぎょうし）＝じっと見つめること。"},
+      {q:"次の語の読みは？", target:"諦める", a:"あきらめる", w:["ていめる","あらためる","しめる"], e:"諦める（あきらめる）＝思い切ること。"},
+      {q:"次の語の読みは？", target:"培う", a:"つちかう", w:["ばいう","たがやかう","つくろう"], e:"培う（つちかう）＝育て養うこと。"},
+      {q:"次の語の読みは？", target:"唆す", a:"そそのかす", w:["さす","しさす","うながす"], e:"唆す（そそのかす）＝おだてて悪い方へ誘うこと。"},
+      {q:"次の語の読みは？", target:"賜る", a:"たまわる", w:["しる","あたわる","たもわる"], e:"賜る（たまわる）＝目上から与えられることの謙譲語。"},
+      {q:"次の語の読みは？", target:"綻びる", a:"ほころびる", w:["たんびる","つくろびる","やぶびる"], e:"綻びる（ほころびる）＝縫い目などがほどける。"},
+      {q:"次の語の読みは？", target:"賓客", a:"ひんきゃく", w:["ひんかく","ほうきゃく","びんきゃく"], e:"賓客（ひんきゃく）＝大切な客。"},
+      {q:"次の語の読みは？", target:"帰依", a:"きえ", w:["きい","きいぞん","きえん"], e:"帰依（きえ）＝神仏を信じてすがること。"},
+      {q:"次の語の読みは？", target:"成仏", a:"じょうぶつ", w:["せいぶつ","じょうぶち","せいふつ"], e:"成仏（じょうぶつ）＝死んで仏になること。"},
+      {q:"次の語の読みは？", target:"流暢", a:"りゅうちょう", w:["りゅうよう","るちょう","りゅうしん"], e:"流暢（りゅうちょう）＝言葉がよどみなく滑らかなこと。"},
+      {q:"「逝去」は他人の死を敬っていう語である。", ox:true, e:"自分の身内には用いない。"},
+      {q:"「遵守」の「遵」は「順守」と書くこともある。", ox:true, e:"「順守」とも書く。意味は同じ。"},
+    ]
+  },
+  kaki:{
+    name:"書き取り", ji:"書", desc:"カタカナを正しい漢字に。四択で選ぶ。",
+    pool:[
+      {q:"ザンシンなデザイン。", target:"ザンシン", a:"斬新", w:["残心","暫新","斬針"], e:"斬新＝発想が新しく際立っているさま。"},
+      {q:"ヨウシャなく批判する。", target:"ヨウシャ", a:"容赦", w:["用捨","要写","容謝"], e:"容赦＝手加減すること。「容赦なく」。"},
+      {q:"センサイな心づかい。", target:"センサイ", a:"繊細", w:["先細","繊才","遷細"], e:"繊細＝細やかで感じやすいこと。"},
+      {q:"ボンヨウな作品。", target:"ボンヨウ", a:"凡庸", w:["凡用","煩庸","凡傭"], e:"凡庸＝平凡で取り柄のないこと。"},
+      {q:"カチョウとして勤める。", target:"カチョウ", a:"課長", w:["家長","花鳥","課帳"], e:"課長＝役職名。"},
+      {q:"リョウシン的な値段。", target:"リョウシン", a:"良心", w:["両親","良芯","量真"], e:"良心＝善悪を判断する心。"},
+      {q:"ケンチョな効果。", target:"ケンチョ", a:"顕著", w:["健著","顕緒","賢著"], e:"顕著＝際立って目につくさま。"},
+      {q:"ヒッスの条件。", target:"ヒッス", a:"必須", w:["必修","必需","筆須"], e:"必須＝必ず必要なこと。"},
+      {q:"ボウガイ行為をやめる。", target:"ボウガイ", a:"妨害", w:["防害","妨碍","暴害"], e:"妨害＝邪魔をすること。"},
+      {q:"シンサンをなめる。", target:"シンサン", a:"辛酸", w:["心酸","辛惨","新酸"], e:"辛酸＝つらく苦しい経験。"},
+      {q:"コクメイに記録する。", target:"コクメイ", a:"克明", w:["刻名","酷明","告明"], e:"克明＝細かく念入りなさま。"},
+      {q:"ダイタイ案を出す。", target:"ダイタイ", a:"代替", w:["大体","代替...","台替"], e:"代替＝他のものでかえること。"},
+      {q:"ユウシュウの美を飾る。", target:"ユウシュウ", a:"有終", w:["優秀","憂愁","幽愁"], e:"有終の美＝最後までやり通し立派に終えること。"},
+      {q:"カンタンに解ける。", target:"カンタン", a:"簡単", w:["感嘆","肝胆","勘当"], e:"簡単＝こみ入っていないこと。"},
+      {q:"シュウチシンを持つ。", target:"シュウチシン", a:"羞恥心", w:["衆知心","収知心","羞智心"], e:"羞恥心＝恥ずかしいと思う心。"},
+      {q:"リンリ観を養う。", target:"リンリ", a:"倫理", w:["輪理","倫里","隣理"], e:"倫理＝人として守るべき道。"},
+      {q:"ジンソクに対応する。", target:"ジンソク", a:"迅速", w:["甚速","尋速","迅束"], e:"迅速＝きわめてすばやいこと。"},
+      {q:"セッチュウ案でまとめる。", target:"セッチュウ", a:"折衷", w:["折中","接衷","摂衷"], e:"折衷＝両者のよい所を取り合わせること。"},
+      {q:"ドウヨウを隠せない。", target:"ドウヨウ", a:"動揺", w:["動容","同様","童謡"], e:"動揺＝気持ちがゆれ動くこと。"},
+      {q:"シンガイ行為。", target:"シンガイ", a:"侵害", w:["心外","侵外","浸害"], e:"侵害＝他人の権利をおかし損なうこと。"},
+      {q:"カクトクした技術。", target:"カクトク", a:"獲得", w:["確得","穫得","獲徳"], e:"獲得＝努力して手に入れること。"},
+      {q:"ボウチョウして傍聴する。", target:"ボウチョウ", a:"膨張", w:["傍聴","膨脹...","暴張"], e:"膨張＝ふくれて大きくなること。"},
+      {q:"センモン分野。", target:"センモン", a:"専門", w:["専問","先門","専文"], e:"専門＝特定の分野に限ること。"},
+      {q:"カイコンの念。", target:"カイコン", a:"悔恨", w:["回恨","開墾","悔懇"], e:"悔恨＝悔やみ残念に思うこと。"},
+      {q:"ロウヒを慎む。", target:"ロウヒ", a:"浪費", w:["朗費","労費","浪比"], e:"浪費＝むだづかい。"},
+      {q:"ケイハツ活動。", target:"ケイハツ", a:"啓発", w:["啓蒙","形発","啓初"], e:"啓発＝気づかせ知識を開き導くこと。"},
+      {q:"「必須」を「必順」と書くのは誤りである。", ox:true, e:"正しくは「必須」。「順」ではない。"},
+      {q:"「動揺」を「同様」と書くと意味が変わってしまう。", ox:true, e:"動揺＝ゆれ動くこと、同様＝同じであること。"},
+    ]
+  },
+  yoji:{
+    name:"四字熟語", ji:"四", desc:"四字熟語の読みと意味を四択で。",
+    pool:[
+      {q:"次の四字熟語の読みは？", target:"臨機応変", a:"りんきおうへん", w:["りんきおうべん","りんぎおうへん","りんきおへん"], e:"臨機応変＝場合に応じ適切に処置すること。"},
+      {q:"次の四字熟語の読みは？", target:"東奔西走", a:"とうほんせいそう", w:["とうほんさいそう","とうぽんせいそう","とうほんせいぞう"], e:"東奔西走＝あちこち忙しく走り回ること。"},
+      {q:"次の四字熟語の読みは？", target:"一念発起", a:"いちねんほっき", w:["いちねんはっき","いちねんほつき","いちねんはつき"], e:"一念発起＝あることを成し遂げようと決心すること。"},
+      {q:"次の四字熟語の読みは？", target:"品行方正", a:"ひんこうほうせい", w:["ひんぎょうほうせい","ひんこうほうしょう","ひんこうほうぜい"], e:"品行方正＝行いがきちんと正しいこと。"},
+      {q:"次の四字熟語の読みは？", target:"千載一遇", a:"せんざいいちぐう", w:["せんさいいちぐう","せんざいいちぐ","せんざいいちごう"], e:"千載一遇＝めったにない好機。"},
+      {q:"次の四字熟語の読みは？", target:"当意即妙", a:"とういそくみょう", w:["とういそくびょう","とうそくみょう","とういそくめい"], e:"当意即妙＝その場に応じ機転をきかせること。"},
+      {q:"次の四字熟語の読みは？", target:"津々浦々", a:"つつうらうら", w:["しんしんうらうら","つつほほ","つつうらら"], e:"津々浦々＝全国いたるところ。"},
+      {q:"次の四字熟語の読みは？", target:"新進気鋭", a:"しんしんきえい", w:["しんしんけえい","しんしんきせい","しんじんきえい"], e:"新進気鋭＝新しく登場して勢いが盛んなこと。"},
+      {q:"次の四字熟語の読みは？", target:"奇想天外", a:"きそうてんがい", w:["きそうてんかい","きしょうてんがい","きそうてんげ"], e:"奇想天外＝普通では思いつかない奇抜さ。"},
+      {q:"次の四字熟語の読みは？", target:"一刀両断", a:"いっとうりょうだん", w:["いっとうりょうたん","いちとうりょうだん","いっとうりゅうだん"], e:"一刀両断＝物事を思い切って処理すること。"},
+      {q:"次の四字熟語の読みは？", target:"縦横無尽", a:"じゅうおうむじん", w:["たてよこむじん","じゅうおうぶじん","しょうおうむじん"], e:"縦横無尽＝自由自在に振る舞うこと。"},
+      {q:"次の四字熟語の読みは？", target:"付和雷同", a:"ふわらいどう", w:["ふからいどう","ふわらいとう","ふわらいどん"], e:"付和雷同＝自分の考えなく他人に同調すること。"},
+      {q:"次の四字熟語の読みは？", target:"巧言令色", a:"こうげんれいしょく", w:["こうごんれいしょく","こうげんれいしき","こうげんれいそく"], e:"巧言令色＝口先や顔つきで人にこびること。"},
+      {q:"次の四字熟語の読みは？", target:"隠忍自重", a:"いんにんじちょう", w:["おんにんじちょう","いんにんじじゅう","いんにんじゅうちょう"], e:"隠忍自重＝じっとこらえ軽はずみな行動を慎むこと。"},
+      {q:"次の四字熟語の読みは？", target:"支離滅裂", a:"しりめつれつ", w:["しりめっれつ","しりべつれつ","じりめつれつ"], e:"支離滅裂＝筋道が立たずばらばらなこと。"},
+      {q:"次の四字熟語の読みは？", target:"厚顔無恥", a:"こうがんむち", w:["こうげんむち","こうがんぶち","あつがんむち"], e:"厚顔無恥＝あつかましく恥知らずなこと。"},
+      {q:"次の四字熟語の読みは？", target:"泰然自若", a:"たいぜんじじゃく", w:["たいねんじじゃく","だいぜんじじゃく","たいぜんじゃく"], e:"泰然自若＝落ち着いて物事に動じないさま。"},
+      {q:"次の四字熟語の読みは？", target:"勧善懲悪", a:"かんぜんちょうあく", w:["かんぜんちょうあ","けんぜんちょうあく","かんぜんじょうあく"], e:"勧善懲悪＝善をすすめ悪をこらしめること。"},
+      {q:"次の四字熟語の読みは？", target:"一騎当千", a:"いっきとうせん", w:["いっきとうぜん","いちきとうせん","いっきとせん"], e:"一騎当千＝一人で千人を相手にできるほど強いこと。"},
+      {q:"次の四字熟語の読みは？", target:"危急存亡", a:"ききゅうそんぼう", w:["きぎゅうそんぼう","ききゅうぞんぼう","ききゅうそんもう"], e:"危急存亡＝生き残るか滅びるかの瀬戸際。"},
+      {q:"次の四字熟語の読みは？", target:"旁若無人", a:"ぼうじゃくぶじん", w:["ぼうじゃくむじん","ほうじゃくぶじん","ぼうにゃくぶじん"], e:"傍若無人＝人前をはばからず勝手に振る舞うこと。"},
+      {q:"次の四字熟語の読みは？", target:"誇大妄想", a:"こだいもうそう", w:["こだいぼうそう","こたいもうそう","こだいもうぞう"], e:"誇大妄想＝自分を実際以上に大きく思い込むこと。"},
+      {q:"次の四字熟語の読みは？", target:"電光石火", a:"でんこうせっか", w:["でんこうせきか","でんごうせっか","でんこうせっが"], e:"電光石火＝動作がきわめて素早いこと。"},
+      {q:"「東奔西走」の「奔」は「走る」意味を持つ。", ox:true, e:"奔＝走る・はしりまわる。"},
+      {q:"「千載一遇」の「載」は「年」を意味する。", ox:true, e:"千載＝千年。長い年月の意。"},
+      {q:"「品行方正」を「品行方政」と書くのは誤りである。", ox:true, e:"正しくは「方正」。"},
+    ]
+  },
+  tairui:{
+    name:"対義語・類義語", ji:"対", desc:"反対の意味・似た意味の語を四択で。",
+    pool:[
+      {q:"「収入」の対義語は？", target:"収入", a:"支出", w:["所得","収益","給与"], e:"収入⇔支出。"},
+      {q:"「内容」の対義語は？", target:"内容", a:"形式", w:["実質","中身","本質"], e:"内容⇔形式。"},
+      {q:"「悲哀」の対義語は？", target:"悲哀", a:"歓喜", w:["悲嘆","哀愁","憂愁"], e:"悲哀⇔歓喜。"},
+      {q:"「促進」の対義語は？", target:"促進", a:"抑制", w:["推進","助長","奨励"], e:"促進⇔抑制。"},
+      {q:"「肯定」の対義語は？", target:"肯定", a:"否定", w:["承認","賛成","是認"], e:"肯定⇔否定。"},
+      {q:"「過激」の対義語は？", target:"過激", a:"穏健", w:["激烈","急進","強烈"], e:"過激⇔穏健。"},
+      {q:"「複雑」の対義語は？", target:"複雑", a:"単純", w:["煩雑","錯綜","繁多"], e:"複雑⇔単純。"},
+      {q:"「高尚」の対義語は？", target:"高尚", a:"低俗", w:["優雅","上品","高貴"], e:"高尚⇔低俗。"},
+      {q:"「債務」の対義語は？", target:"債務", a:"債権", w:["借金","負債","返済"], e:"債務⇔債権。"},
+      {q:"「絶対」の対義語は？", target:"絶対", a:"相対", w:["普遍","必然","完全"], e:"絶対⇔相対。"},
+      {q:"「明白」の対義語は？", target:"明白", a:"曖昧", w:["明確","判明","歴然"], e:"明白⇔曖昧。"},
+      {q:"「緊張」の対義語は？", target:"緊張", a:"弛緩", w:["興奮","緊迫","圧迫"], e:"緊張⇔弛緩（しかん）。"},
+      {q:"「進歩」の類義語は？", target:"進歩", a:"発達", w:["後退","停滞","退化"], e:"進歩＝発達。向上すること。"},
+      {q:"「動機」の類義語は？", target:"動機", a:"契機", w:["結果","目的","手段"], e:"動機＝契機。物事を起こすきっかけ。"},
+      {q:"「我慢」の類義語は？", target:"我慢", a:"忍耐", w:["放任","奔放","享楽"], e:"我慢＝忍耐。こらえること。"},
+      {q:"「親切」の類義語は？", target:"親切", a:"懇切", w:["冷酷","薄情","邪険"], e:"親切＝懇切。心がこもっていること。"},
+      {q:"「処置」の類義語は？", target:"処置", a:"措置", w:["放棄","怠慢","無視"], e:"処置＝措置。取りはからうこと。"},
+      {q:"「豊富」の類義語は？", target:"豊富", a:"潤沢", w:["欠乏","希少","不足"], e:"豊富＝潤沢。たっぷりあること。"},
+      {q:"「永久」の類義語は？", target:"永久", a:"不滅", w:["一瞬","短期","臨時"], e:"永久＝不滅。いつまでもなくならないこと。"},
+      {q:"「価格」の類義語は？", target:"価格", a:"値段", w:["重量","数量","品質"], e:"価格＝値段。"},
+      {q:"「節約」の類義語は？", target:"節約", a:"倹約", w:["浪費","散財","奢侈"], e:"節約＝倹約。むだを省くこと。"},
+      {q:"「沈着」の類義語は？", target:"沈着", a:"冷静", w:["動転","狼狽","興奮"], e:"沈着＝冷静。落ち着いていること。"},
+      {q:"「収入」の対義語は「支出」である。", ox:true, e:"収入⇔支出で正しい。"},
+      {q:"「複雑」の対義語は「煩雑」である。", ox:false, e:"複雑の対義語は「単純」。煩雑は類義に近い。"},
+    ]
+  },
+  doukun:{
+    name:"同音・同訓異字", ji:"音", desc:"文脈に合う正しい漢字を四択で。",
+    pool:[
+      {q:"時間にカンシンを持つ。「カンシン」の正しい漢字は？", target:"カンシン", a:"関心", w:["感心","歓心","寒心"], e:"関心＝心にかけ気にすること。"},
+      {q:"努力にカンシンする。正しい漢字は？", target:"カンシン", a:"感心", w:["関心","歓心","寒心"], e:"感心＝立派さに心を動かされること。"},
+      {q:"上司のカンシンを買う。正しい漢字は？", target:"カンシン", a:"歓心", w:["関心","感心","寒心"], e:"歓心＝うれしく思う心。「歓心を買う」。"},
+      {q:"国のシュウシを立て直す。正しい漢字は？", target:"シュウシ", a:"収支", w:["終始","修士","終止"], e:"収支＝収入と支出。"},
+      {q:"シュウシ笑顔だった。正しい漢字は？", target:"シュウシ", a:"終始", w:["収支","修士","終止"], e:"終始＝始めから終わりまで。"},
+      {q:"計画をジッコウする。正しい漢字は？", target:"ジッコウ", a:"実行", w:["実効","execution","失効"], e:"実行＝実際に行うこと。"},
+      {q:"法律がジッコウを持つ。正しい漢字は？", target:"ジッコウ", a:"実効", w:["実行","失効","execution"], e:"実効＝実際の効力・効果。"},
+      {q:"カテイを重視する。（過程）正しい漢字は？", target:"カテイ", a:"過程", w:["課程","仮定","家庭"], e:"過程＝物事の進む道すじ。"},
+      {q:"教育カテイを修める。正しい漢字は？", target:"カテイ", a:"課程", w:["過程","仮定","家庭"], e:"課程＝学習などの順序立った内容。"},
+      {q:"もしものカテイで考える。正しい漢字は？", target:"カテイ", a:"仮定", w:["過程","課程","家庭"], e:"仮定＝かりに定めること。"},
+      {q:"イガイな結末。正しい漢字は？", target:"イガイ", a:"意外", w:["以外","遺骸","意概"], e:"意外＝思いがけないこと。"},
+      {q:"それイガイは不要。正しい漢字は？", target:"イガイ", a:"以外", w:["意外","遺骸","意概"], e:"以外＝それを除いたほか。"},
+      {q:"罪を犯したコウカイ。正しい漢字は？", target:"コウカイ", a:"後悔", w:["公開","航海","公海"], e:"後悔＝あとで悔やむこと。"},
+      {q:"情報をコウカイする。正しい漢字は？", target:"コウカイ", a:"公開", w:["後悔","航海","公海"], e:"公開＝広く一般に開放すること。"},
+      {q:"船で太平洋をコウカイ。正しい漢字は？", target:"コウカイ", a:"航海", w:["後悔","公開","公海"], e:"航海＝船で海をわたること。"},
+      {q:"仏前に花をソナえる。正しい漢字は？", target:"ソナえる", a:"供える", w:["備える","添える","副える"], e:"供える＝神仏などにささげる。"},
+      {q:"災害にソナえる。正しい漢字は？", target:"ソナえる", a:"備える", w:["供える","添える","副える"], e:"備える＝前もって用意する。"},
+      {q:"条件にアう。正しい漢字は？", target:"アう", a:"合う", w:["会う","遭う","逢う"], e:"合う＝一致する・ぴったりする。"},
+      {q:"友人とアう。正しい漢字は？", target:"アう", a:"会う", w:["合う","遭う","逢う"], e:"会う＝人と顔を合わせる。"},
+      {q:"事故にアう。正しい漢字は？", target:"アう", a:"遭う", w:["合う","会う","逢う"], e:"遭う＝好ましくない出来事に出くわす。"},
+      {q:"「実行」と「実効」は意味が異なる。", ox:true, e:"実行＝行うこと、実効＝実際の効果。"},
+      {q:"「以外」と「意外」は同じ意味である。", ox:false, e:"以外＝〜を除く、意外＝思いがけない。別の意味。"},
+    ]
+  },
+  kousei:{
+    name:"構成・部首", ji:"首", desc:"部首や熟語の組み立てを四択で。",
+    pool:[
+      {q:"「裁」の部首は？", target:"裁", a:"衣（ころも）", w:["土","戈","十"], e:"裁の部首は「衣」。"},
+      {q:"「庸」の部首は？", target:"庸", a:"广（まだれ）", w:["用","彐","隶"], e:"庸の部首は「广（まだれ）」。"},
+      {q:"「奪」の部首は？", target:"奪", a:"大（だい）", w:["隹","寸","木"], e:"奪の部首は「大」。"},
+      {q:"「啓」の部首は？", target:"啓", a:"口（くち）", w:["戸","攵","尸"], e:"啓の部首は「口」。"},
+      {q:"「衛」の部首は？", target:"衛", a:"行（ぎょうがまえ）", w:["韋","口","彳"], e:"衛の部首は「行」。"},
+      {q:"「款」の部首は？", target:"款", a:"欠（あくび）", w:["士","示","木"], e:"款の部首は「欠（あくび）」。"},
+      {q:"「再」の部首は？", target:"再", a:"冂（けいがまえ）", w:["一","土","门"], e:"再の部首は「冂（けいがまえ）」。"},
+      {q:"「翼」の部首は？", target:"翼", a:"羽（はね）", w:["田","共","異"], e:"翼の部首は「羽」。"},
+      {q:"「衷」の部首は？", target:"衷", a:"衣（ころも）", w:["口","中","亠"], e:"衷の部首は「衣」。"},
+      {q:"「劣」の部首は？", target:"劣", a:"力（ちから）", w:["少","小","厂"], e:"劣の部首は「力」。"},
+      {q:"「魅」の部首は？", target:"魅", a:"鬼（おに）", w:["未","厶","儿"], e:"魅の部首は「鬼」。"},
+      {q:"「企」の部首は？", target:"企", a:"人（ひと）", w:["止","一","卜"], e:"企の部首は「人（ひとやね）」。"},
+      {q:"「善」の部首は？", target:"善", a:"口（くち）", w:["羊","并","一"], e:"善の部首は「口」。"},
+      {q:"「増減」の熟語の構成は？", target:"増減", a:"反対の意味の字を重ねた", w:["似た意味の字を重ねた","上が下を修飾","下が上の目的語"], e:"増減＝増える⇔減る。反対。"},
+      {q:"「河川」の熟語の構成は？", target:"河川", a:"似た意味の字を重ねた", w:["反対の意味の字を重ねた","上が下を修飾","主語と述語"], e:"河川＝川を表す似た意味。"},
+      {q:"「読書」の熟語の構成は？", target:"読書", a:"下の字が上の字の目的語（書を読む）", w:["似た意味の字を重ねた","反対の意味の字を重ねた","上が下を修飾"], e:"読書＝書を読む。下が目的語。"},
+      {q:"「無効」の熟語の構成は？", target:"無効", a:"上の字が下の字を打ち消す（効力が無い）", w:["似た意味の字を重ねた","反対の意味の字を重ねた","下が上の目的語"], e:"無効＝効力が無い。打ち消し。"},
+      {q:"「県営」の熟語の構成は？", target:"県営", a:"主語と述語の関係（県が営む）", w:["似た意味の字を重ねた","上が下を修飾","下が上の目的語"], e:"県営＝県が営む。主述。"},
+      {q:"「急流」の熟語の構成は？", target:"急流", a:"上の字が下の字を修飾する（急な流れ）", w:["反対の意味の字を重ねた","主語と述語","下が上の目的語"], e:"急流＝急な流れ。上が修飾。"},
+      {q:"「思考」の熟語の構成は？", target:"思考", a:"似た意味の字を重ねた", w:["反対の意味の字を重ねた","上が下を修飾","下が上の目的語"], e:"思考＝思うも考えるも近い意味。"},
+      {q:"「県立」は主語・述語の関係の熟語である。", ox:true, e:"県が立てる、の主述関係。"},
+      {q:"「無害」は上の字が下の字を打ち消す構成である。", ox:true, e:"無害＝害が無い。打ち消し。"},
+    ]
+  },
+};
+
+const ORDER = ['yomi','kaki','yoji','tairui','doukun','kousei'];
+
+/* ---------- 状態 ---------- */
+let curGenre=null, questions=[], idx=0, score=0, correctCount=0;
+let timeLeft=120, timerId=null;
+let wrongList=[]; // {q, target, t, yours, correct, e}
+let reviewIdx=0, lastResult=null;
+const TOTAL_Q=10, START_TIME=120, MAX_TIME=999;
+const STORAGE_KEY='kanken2_ni_ranking_v1';
+
+/* ---------- 初期化 ---------- */
+function buildGenreCards(){
+  const grid=document.getElementById('genreGrid');
+  grid.innerHTML='';
+  ORDER.forEach(key=>{
+    const g=QUIZ[key];
+    const div=document.createElement('div');
+    div.className='gcard';
+    div.onclick=()=>openModal(key);
+    div.innerHTML=`<div class="ji">${g.ji}</div><div class="nm">${g.name}</div><div class="ct">全${g.pool.length}問から出題</div>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ---------- モーダル（最後の確認） ---------- */
+let pendingGenre=null;
+function openModal(key){
+  pendingGenre=key;
+  const g=QUIZ[key];
+  document.getElementById('modalJi').textContent=g.ji;
+  document.getElementById('modalName').textContent=g.name;
+  document.getElementById('modalDesc').textContent=g.desc;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');pendingGenre=null;}
+function confirmStart(){
+  const key=pendingGenre;
+  document.getElementById('modalBg').classList.remove('show');
+  if(key) startGame(key);
+}
+function randomGenre(){openModal(ORDER[Math.floor(Math.random()*ORDER.length)]);}
+
+/* ---------- ゲーム開始 ---------- */
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function startGame(key){
+  curGenre=key;
+  const pool=QUIZ[key].pool;
+  questions=shuffle(pool).slice(0,Math.min(TOTAL_Q,pool.length));
+  idx=0;score=0;correctCount=0;wrongList=[];timeLeft=START_TIME;
+  document.getElementById('hudScore').textContent='0';
+  showScreen('quiz');
+  startTimer();
+  renderQuestion();
+}
+
+/* ---------- タイマー ---------- */
+function startTimer(){
+  clearInterval(timerId);
+  updateTimeUI();
+  timerId=setInterval(()=>{
+    timeLeft--;
+    if(timeLeft<=0){timeLeft=0;updateTimeUI();endGame();return;}
+    updateTimeUI();
+  },1000);
+}
+function updateTimeUI(){
+  document.getElementById('hudTime').textContent=timeLeft;
+  const pct=Math.max(0,Math.min(100,(timeLeft/START_TIME)*100));
+  document.getElementById('timeFill').style.width=pct+'%';
+  const pill=document.getElementById('timePill');
+  if(timeLeft<=15)pill.classList.add('warn');else pill.classList.remove('warn');
+}
+
+/* ---------- 出題描画 ---------- */
+function renderQuestion(){
+  const q=questions[idx];
+  document.getElementById('qTag').textContent=QUIZ[curGenre].name;
+  const isOX=(typeof q.ox==='boolean');
+  document.getElementById('qType').textContent=isOX?'○×問題':'4択問題';
+  document.getElementById('progress').textContent=`第 ${idx+1} 問 / ${questions.length}`;
+
+  // 問題文（targetがあれば大きく強調）
+  let html=q.q;
+  const sub=document.getElementById('qSub');
+  if(q.target){
+    html=q.q+`<br><span class="target">「${q.target}」</span>`;
+    sub.textContent='';
+  }else{sub.textContent='';}
+  document.getElementById('qText').innerHTML=html;
+
+  const box=document.getElementById('choices');
+  box.innerHTML='';box.className='choices';
+
+  if(isOX){
+    box.classList.add('ox');
+    [['◯',true],['✕',false]].forEach(([mark,val])=>{
+      const b=document.createElement('button');
+      b.className='choice ox-mark';b.textContent=mark;
+      b.onclick=()=>pick(b,val===q.ox,q);
+      box.appendChild(b);
+    });
+  }else{
+    // {text, correct} を作りシャッフル（正解位置の偏り防止）
+    let opts=[{text:q.a,correct:true}].concat(q.w.map(w=>({text:w,correct:false})));
+    opts=shuffle(opts);
+    opts.forEach(o=>{
+      const b=document.createElement('button');
+      b.className='choice';b.textContent=o.text;
+      b.onclick=()=>pick(b,o.correct,q);
+      box.appendChild(b);
+    });
+  }
+}
+
+/* ---------- 解答処理 ---------- */
+function pick(btn,isCorrect,q){
+  const buttons=document.querySelectorAll('#choices .choice');
+  buttons.forEach(b=>b.disabled=true);
+  const isOX=(typeof q.ox==='boolean');
+  const correctText=isOX?(q.ox?'◯':'✕'):q.a;
+
+  if(isCorrect){
+    score+=10;correctCount++;
+    timeLeft=Math.min(MAX_TIME,timeLeft+5);
+    btn.classList.add('correct');
+    document.getElementById('hudScore').textContent=score;
+    updateTimeUI();
+    showToast(true,'正解！','+10点　時間 +5秒　⏱');
+  }else{
+    timeLeft=Math.max(0,timeLeft-5);
+    btn.classList.add('wrong');
+    // 正解ボタンを光らせる
+    buttons.forEach(b=>{
+      if(isOX){
+        if((b.textContent==='◯')===q.ox)b.classList.add('correct');
+      }else{
+        if(b.textContent===q.a)b.classList.add('correct');
+      }
+    });
+    updateTimeUI();
+    showToast(false,'❌ 不正解',`正解は「${correctText}」（時間 −5秒）`);
+    // 間違いリストへ
+    wrongList.push({
+      qhtml: q.target?`${q.q}<br><span class="target">「${q.target}」</span>`:q.q,
+      yours: isOX?(q.ox?'✕':'◯'):btn.textContent, // 自分が選んだ
+      correct: correctText,
+      e:q.e||''
+    });
+  }
+  // 次へ
+  setTimeout(()=>{
+    hideToast();
+    idx++;
+    if(idx>=questions.length || timeLeft<=0){endGame();}
+    else renderQuestion();
+  },1150);
+}
+
+/* ---------- トースト ---------- */
+let toastTimer=null;
+function showToast(ok,big,small){
+  const t=document.getElementById('toast');
+  t.className='toast '+(ok?'ok':'ng');
+  document.getElementById('toastBig').textContent=big;
+  document.getElementById('toastSmall').textContent=small;
+  // reflow→show
+  void t.offsetWidth;
+  t.classList.add('show');
+}
+function hideToast(){
+  const t=document.getElementById('toast');
+  t.classList.remove('show');
+}
+
+/* ---------- 終了・結果 ---------- */
+function endGame(){
+  clearInterval(timerId);
+  hideToast();
+  const base=correctCount*10;
+  const bonus=timeLeft; // 残り秒数=ボーナス点
+  const total=base+bonus;
+  lastResult={genre:curGenre,total,base,bonus,correct:correctCount,saved:false};
+
+  document.getElementById('resGenre').textContent='【'+QUIZ[curGenre].name+'】';
+  document.getElementById('resTotal').textContent=total;
+  document.getElementById('resCorrect').textContent=correctCount;
+  document.getElementById('resBase').textContent=base;
+  document.getElementById('resBonus').textContent=bonus;
+
+  // ランク評価
+  const badge=document.getElementById('resBadge');
+  let label,bg,col;
+  if(correctCount>=10){label='皆伝（全問正解）';bg='linear-gradient(135deg,#d4af37,#b8932a)';col='#231a07';}
+  else if(correctCount>=8){label='免許皆伝に近し';bg='linear-gradient(135deg,#b5292f,#8e1e23)';col='#fff';}
+  else if(correctCount>=6){label='精進あるのみ';bg='rgba(212,175,55,.18)';col='#e6c875';}
+  else if(correctCount>=4){label='修行の途上';bg='rgba(255,255,255,.1)';col='#cdbf9e';}
+  else{label='初学の章';bg='rgba(255,255,255,.06)';col='#cdbf9e';}
+  badge.textContent=label;badge.style.background=bg;badge.style.color=col;
+
+  // 復習ボタンの表示
+  document.getElementById('reviewBtn').style.display=wrongList.length?'block':'none';
+  document.getElementById('saveBtn').disabled=false;
+  document.getElementById('saveBtn').textContent='📥 ランキングに登録';
+
+  showScreen('result');
+}
+
+/* ---------- スコア保存 ---------- */
+function loadRanking(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||{};}
+  catch(e){return {};}
+}
+function saveScore(){
+  if(!lastResult||lastResult.saved)return;
+  let name=document.getElementById('playerName').value.trim();
+  if(!name)name='名無しの達人';
+  const data=loadRanking();
+  if(!data[lastResult.genre])data[lastResult.genre]=[];
+  const d=new Date();
+  const dateStr=`${d.getMonth()+1}/${d.getDate()}`;
+  data[lastResult.genre].push({name,score:lastResult.total,correct:lastResult.correct,date:dateStr});
+  data[lastResult.genre].sort((a,b)=>b.score-a.score);
+  data[lastResult.genre]=data[lastResult.genre].slice(0,50);
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}
+  lastResult.saved=true;
+  document.getElementById('saveBtn').textContent='✅ 登録しました';
+  document.getElementById('saveBtn').disabled=true;
+  setTimeout(()=>showRanking(lastResult.genre),500);
+}
+
+/* ---------- 復習 ---------- */
+function showReview(){
+  reviewIdx=0;
+  renderReview();
+  showScreen('review');
+}
+function renderReview(){
+  const card=document.getElementById('reviewCard');
+  if(wrongList.length===0){
+    card.innerHTML=`<div class="perfect-msg">🎉<br>間違いはありませんでした！<br>お見事です。</div>`;
+    return;
+  }
+  const w=wrongList[reviewIdx];
+  card.innerHTML=`
+    <div class="review-head">
+      <span class="ttl">📖 間違えた問題</span>
+      <span class="count">${reviewIdx+1} / ${wrongList.length}</span>
+    </div>
+    <div class="review-q">${w.qhtml}</div>
+    <div class="ans-block">
+      <div class="ans-line yours"><span class="lab">あなたの解答</span><span class="val">${w.yours}</span></div>
+      <div class="ans-line right"><span class="lab">正解</span><span class="val">${w.correct}</span></div>
+    </div>
+    ${w.e?`<div class="explain">💡 ${w.e}</div>`:''}
+    <div class="review-nav">
+      <button class="btn btn-ghost" onclick="prevReview()" ${reviewIdx===0?'disabled style=opacity:.4':''}>‹ 前へ</button>
+      <button class="btn btn-ghost" onclick="nextReview()" ${reviewIdx===wrongList.length-1?'disabled style=opacity:.4':''}>次へ ›</button>
+    </div>`;
+}
+function prevReview(){if(reviewIdx>0){reviewIdx--;renderReview();}}
+function nextReview(){if(reviewIdx<wrongList.length-1){reviewIdx++;renderReview();}}
+function backToResult(){showScreen('result');}
+
+/* ---------- ランキング画面 ---------- */
+let curRankTab=null;
+function showRanking(focusGenre){
+  buildRankTabs();
+  curRankTab=focusGenre||ORDER[0];
+  renderRankList();
+  showScreen('ranking');
+}
+function buildRankTabs(){
+  const tabs=document.getElementById('rankTabs');
+  tabs.innerHTML='';
+  ORDER.forEach(key=>{
+    const b=document.createElement('button');
+    b.className='tab';b.textContent=QUIZ[key].name;
+    b.dataset.key=key;
+    b.onclick=()=>{curRankTab=key;renderRankList();};
+    tabs.appendChild(b);
+  });
+}
+function renderRankList(){
+  document.querySelectorAll('#rankTabs .tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.key===curRankTab);
+  });
+  const data=loadRanking();
+  const list=document.getElementById('rankList');
+  const arr=(data[curRankTab]||[]).slice(0,10);
+  if(arr.length===0){
+    list.innerHTML=`<div class="rank-empty">まだ記録がありません。<br>「${QUIZ[curRankTab].name}」に挑戦してみましょう！</div>`;
+    return;
+  }
+  list.innerHTML='';
+  arr.forEach((r,i)=>{
+    const li=document.createElement('li');
+    if(i<3)li.classList.add('top'+(i+1));
+    const medal=['🥇','🥈','🥉'][i]||(i+1);
+    li.innerHTML=`<span class="pos">${medal}</span>
+      <span class="nm">${escapeHtml(r.name)}</span>
+      <span class="dt">${r.date||''}</span>
+      <span class="sc">${r.score}点</span>`;
+    list.appendChild(li);
+  });
+}
+function clearRanking(){
+  if(confirm('この端末に保存されたランキングをすべて消去します。よろしいですか？')){
+    try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+    renderRankList();
+  }
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- 画面遷移 ---------- */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goTitle(){clearInterval(timerId);showScreen('title');}
+function retrySame(){if(curGenre)startGame(curGenre);}
+
+/* ---------- canvas 背景（動的リサイズ） ---------- */
+const canvas=document.getElementById('bgCanvas');
+const ctx=canvas.getContext('2d');
+const KANJI='漢字検定弐級読書熟語訓音対義同'.split('');
+let drops=[],dpr=1;
+function resizeCanvas(){
+  dpr=window.devicePixelRatio||1;
+  canvas.width=Math.floor(window.innerWidth*dpr);
+  canvas.height=Math.floor(window.innerHeight*dpr);
+  canvas.style.width=window.innerWidth+'px';
+  canvas.style.height=window.innerHeight+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  // 文字数を画面幅に応じて再計算
+  const count=Math.max(10,Math.floor(window.innerWidth/40));
+  drops=[];
+  for(let i=0;i<count;i++){
+    drops.push({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      size:14+Math.random()*22,
+      spd:.15+Math.random()*.45,
+      ch:KANJI[Math.floor(Math.random()*KANJI.length)],
+      a:.04+Math.random()*.10
+    });
+  }
+}
+function drawBg(){
+  ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+  drops.forEach(d=>{
+    ctx.font=`${d.size}px 'Shippori Mincho', serif`;
+    ctx.fillStyle=`rgba(212,175,55,${d.a})`;
+    ctx.fillText(d.ch,d.x,d.y);
+    d.y+=d.spd;
+    if(d.y>window.innerHeight+d.size){
+      d.y=-d.size;d.x=Math.random()*window.innerWidth;
+      d.ch=KANJI[Math.floor(Math.random()*KANJI.length)];
+    }
+  });
+  requestAnimationFrame(drawBg);
+}
+let resizeTO;
+window.addEventListener('resize',()=>{clearTimeout(resizeTO);resizeTO=setTimeout(resizeCanvas,120);});
+window.addEventListener('orientationchange',()=>setTimeout(resizeCanvas,200));
+
+/* ---------- 起動 ---------- */
+buildGenreCards();
+resizeCanvas();
+drawBg();
+// モーダル背景クリックで閉じる
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+</script>
+</body>
+</html>
