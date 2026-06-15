@@ -56,7 +56,7 @@
     color:var(--paper);text-shadow:0 2px 18px rgba(212,175,55,.25);
   }
   h1 .kyu{color:var(--gold);}
-  h1 .ichi{color:var(--crimson-bright);}
+  h1 .ichi{display:block;white-space:nowrap;color:var(--crimson-bright);}
   .subtitle{margin-top:10px;color:var(--paper-dim);font-size:clamp(13px,3.4vw,16px);letter-spacing:.05em;}
 
   .howto{
@@ -168,7 +168,11 @@
     display:flex;align-items:center;justify-content:center;
   }
   .choice:active{transform:scale(.97);}
-  .choice:hover{border-color:var(--gold);background:#26201600;}
+  .choice:focus{outline:none;}
+  .choice:focus-visible{outline:none;}
+  @media (hover:hover) and (pointer:fine){
+    .choice:hover{border-color:var(--gold);background:#26201600;}
+  }
   .choice.ox-mark{font-size:clamp(26px,8vw,34px);font-weight:800;}
   .choice.correct{background:linear-gradient(135deg,#2f7a52,#256142);border-color:var(--green);color:#fff;}
   .choice.wrong{background:linear-gradient(135deg,#8e2126,#6b181c);border-color:var(--crimson);color:#fff;}
@@ -336,6 +340,12 @@
       <div class="total-score"><span id="resTotal">0</span><small> 点</small></div>
       <div class="rank-badge" id="resBadge">—</div>
 
+      <div id="hanamaru" style="display:none;margin:14px auto 4px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,rgba(244,143,177,.18),rgba(212,175,55,.18));border:1.5px solid rgba(244,143,177,.55);max-width:340px;">
+        <div style="font-size:30px;line-height:1;">🌸</div>
+        <div style="font-weight:800;color:#f6a6c1;margin-top:4px;letter-spacing:.04em;">花丸スタンプ獲得！</div>
+        <div style="font-size:12px;color:var(--paper-dim);margin-top:3px;">正解率90%以上達成　ポータルのランキングに反映されます</div>
+      </div>
+
       <div class="score-break">
         <div class="row"><span>正解数</span><span class="v"><span id="resCorrect">0</span> / 10 問</span></div>
         <div class="row"><span>基礎点（正解×10）</span><span class="v"><span id="resBase">0</span> 点</span></div>
@@ -343,7 +353,7 @@
       </div>
 
       <div class="name-entry" id="nameEntry">
-        <input type="text" id="playerName" placeholder="ランキング登録名（任意）" maxlength="12">
+        <input type="text" id="playerName" placeholder="花丸ランキング用の名前（任意）" maxlength="12">
       </div>
 
       <div class="result-actions">
@@ -397,6 +407,9 @@
 
 <!-- feedback toast -->
 <div class="toast" id="toast"><div class="big" id="toastBig"></div><div class="small" id="toastSmall"></div></div>
+
+<!-- ポータル共通：花丸スタンプ送信 -->
+<script src="https://pecpec37-gift.github.io/portal/stamp.js"></script>
 
 <script>
 /* =========================================================
@@ -606,6 +619,7 @@ let wrongList=[]; // {q, target, t, yours, correct, e}
 let reviewIdx=0, lastResult=null;
 const TOTAL_Q=10, START_TIME=120, MAX_TIME=999;
 const STORAGE_KEY='kanken2_ni_ranking_v1';
+const STAMP_GAME_ID='kanken-quiz_2-2';
 
 /* ---------- 初期化 ---------- */
 function buildGenreCards(){
@@ -719,6 +733,7 @@ function renderQuestion(){
 function pick(btn,isCorrect,q){
   const buttons=document.querySelectorAll('#choices .choice');
   buttons.forEach(b=>b.disabled=true);
+  if(btn&&btn.blur)btn.blur();
   const isOX=(typeof q.ox==='boolean');
   const correctText=isOX?(q.ox?'◯':'✕'):q.a;
 
@@ -805,6 +820,27 @@ function endGame(){
   document.getElementById('saveBtn').disabled=false;
   document.getElementById('saveBtn').textContent='📥 ランキングに登録';
 
+  // 花丸スタンプ（正解率90%以上＝10問中9問以上）
+  const hm=document.getElementById('hanamaru');
+  if(correctCount>=9){
+    if(hm)hm.style.display='block';
+    lastResult.hanamaru=true;
+    // ポータル登録名が既にあれば即送信（重複防止）
+    if(window.TomyStamp && TomyStamp.getPlayer() && !lastResult.stamped){
+      lastResult.stamped=true;
+      try{TomyStamp.send(STAMP_GAME_ID,QUIZ[curGenre].name,correctCount);}catch(e){}
+    }
+  }else{
+    if(hm)hm.style.display='none';
+    lastResult.hanamaru=false;
+  }
+
+  // ポータル登録名を自動入力
+  try{
+    const pn=document.getElementById('playerName');
+    if(window.TomyStamp && pn && !pn.value){const sv=TomyStamp.getPlayer();if(sv)pn.value=sv;}
+  }catch(e){}
+
   showScreen('result');
 }
 
@@ -825,6 +861,16 @@ function saveScore(){
   data[lastResult.genre].sort((a,b)=>b.score-a.score);
   data[lastResult.genre]=data[lastResult.genre].slice(0,50);
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}catch(e){}
+  // ポータル花丸ランキングへ反映
+  try{
+    if(window.TomyStamp){
+      TomyStamp.setPlayer(name);
+      if(lastResult.hanamaru && !lastResult.stamped){
+        lastResult.stamped=true;
+        TomyStamp.send(STAMP_GAME_ID,QUIZ[lastResult.genre].name,lastResult.correct);
+      }
+    }
+  }catch(e){}
   lastResult.saved=true;
   document.getElementById('saveBtn').textContent='✅ 登録しました';
   document.getElementById('saveBtn').disabled=true;
